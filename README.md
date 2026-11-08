@@ -8,18 +8,21 @@ intent of finding errors**, before a user finds them.
 You write tests in two places, and then you try to break the code:
 
 ```
-  Task 3   BREAK IT          borders and bad input: try to make the code fail   (you, alone first)
-  Task 2   SEPARATE FILE     the tests live in their own file test_refund.py     (you, alone first)
-  Task 1   INSIDE THE FILE   the tests live in the docstring of the function     (together)
+  Task 3   BREAK IT          borders and bad input: try to make the code fail
+  Task 2   SEPARATE FILE     the tests live in their own file test_refund.py
+  Task 1   INSIDE THE FILE   the tests live in the docstring of the function
 ```
 
 **The big idea of today:** a developer tests "gently". A tester tries to **break** the code. Today you are the tester.
 
-| Task | Where do the tests live? | Tool | Who |
-|------|--------------------------|------|-----|
-| 1 | inside `leap_year.py` | `doctest` (built into Python) | we do it together |
-| 2 | in a separate file, `test_refund.py` | `pytest` | you try alone first |
-| 3 | in a separate file, many cases at once | `pytest` | you try alone first |
+| Task | Where do the tests live? | Tool |
+|------|--------------------------|------|
+| 1 | inside `leap_year.py` | `doctest` (built into Python) |
+| 2 | in a separate file, `test_refund.py` | `pytest` |
+| 3 | in a separate file, many cases at once | `pytest` |
+
+**We do every task together.** I type on the big screen, you type the same on your laptop. Every step and every
+line of code is also written here: if you can't see the screen or you fall behind, follow this README.
 
 ## Time plan (60 minutes, after the intro)
 
@@ -27,9 +30,9 @@ You write tests in two places, and then you try to break the code:
 |------|------|-------|
 | 0:00 | [Before you start](#before-you-start-8-min) | Check your setup, get the code |
 | 0:08 | [Task 1](#task-1---tests-inside-the-file-12-min) | Tests inside the file |
-| 0:20 | [Task 2](#task-2---tests-in-a-separate-file-20-min) | Tests in a separate file |
-| 0:40 | [Task 3](#task-3---break-it-15-min) | Break it! |
-| 0:55 | [Wrap-up](#wrap-up) | What you practised |
+| 0:20 | [Task 2](#task-2---tests-in-a-separate-file-17-min) | Tests in a separate file |
+| 0:37 | [Task 3](#task-3---break-it-15-min) | Break it! |
+| 0:52 | [Wrap-up](#wrap-up) | What you practised |
 
 ## What is in this repository
 
@@ -42,7 +45,7 @@ You write tests in two places, and then you try to break the code:
 | `task3-break-it/test_refund.py` | Border tests and bad-input tests, with blanks. |
 | `*/Dockerfile` | Every task folder has one. It packs Python and runs the tests of that folder. |
 
-The solutions are **not** in this repository. They are shown on the slides after each task.
+The files start with the bugs and the blanks. During the tutorial we fill and fix them together.
 
 ## Before you start (8 min)
 
@@ -108,7 +111,7 @@ Then, inside a task folder, use these commands instead of `docker build` + `dock
 
 ## Task 1 - Tests inside the file (12 min)
 
-**We do this one together, step by step.** Type the same things on your laptop.
+Type the same things as on the big screen, step by step.
 
 ### 1a. Read the two files (4 min)
 
@@ -163,32 +166,61 @@ Test passed.
 
 > **Think:** one test passed. Does that mean the function is correct?
 
-### 1c. Add a second test (4 min)
+### 1c. Add a second test (3 min)
 
 Quick question before you type: **is 1900 a leap year?** Guess first, then check it with the rule.
 
-Add these two lines **right under `True`**, with the same indentation:
+Add these two lines **right under `True`** and **above the closing `"""`**, with the same indentation as the
+first test. Type them, or paste them at the very start of the line:
 
 ```python
     >>> is_leap_year(1900)
     False
 ```
 
-Build and run again. Read the output: which example failed, what was **Expected**, and what did you **Get**?
+Save the file (**Ctrl + S**), then build and run again. You should see:
+
+```
+Failed example:
+    is_leap_year(1900)
+Expected:
+    False
+Got:
+    True
+...
+1 passed and 1 failed.
+```
 
 **Questions**
 
 1. Which part of the rule does the code forget?
 2. The first test (2024) passed, although the bug was already there. Why?
 
-Fix the last line of the function so it follows the rule. Build and run until you see `Test passed.` again.
+### 1d. Fix it, and test the fix (3 min)
 
-### 1d. One more test (2 min)
+Most people fix it like this. Change the last line of the function:
 
-2000 is divisible by 100, but also by 400. Use the rule to decide what `is_leap_year(2000)` must return, and write
-this test yourself, under the others. Build and run.
+```python
+    return year % 4 == 0 and year % 100 != 0
+```
 
-Does your fix from 1c still pass? If not, the new test just caught a fix that was only half right. Fix it again.
+Save, build and run: `2 passed.` All green. Are we done?
+
+Add one more test under the others: 2000 is divisible by 100, but also by 400.
+
+```python
+    >>> is_leap_year(2000)
+    True
+```
+
+Save, build and run: `Expected: True`, `Got: False`. The new test caught a fix that was only half right.
+Now the full rule:
+
+```python
+    return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+```
+
+Save, build and run. You should see `3 passed.` and `Test passed.`
 
 ### Commit
 
@@ -201,15 +233,13 @@ git commit -m "Task 1 done"
 
 ---
 
-## Task 2 - Tests in a separate file (20 min)
-
-**Try it yourself first!** After about 15 minutes the solution is shown on the slides.
+## Task 2 - Tests in a separate file (17 min)
 
 ```bash
 cd ../task2-separate
 ```
 
-### 2a. Read the rules, not the code (3 min)
+### 2a. Read the rules, not the code (2 min)
 
 A tester starts from the **rules** (the specification), not from the code. The rules are at the top of `refund.py`:
 
@@ -221,9 +251,9 @@ A tester starts from the **rules** (the specification), not from the code. The r
 
 Do **not** read the code of `refund()` yet!
 
-### 2b. Fill in the blanks (5 min)
+### 2b. Run the tests with the blanks (2 min)
 
-Open `test_refund.py`. The first test is already done for you:
+Open `test_refund.py`. The first test is complete, every other test has a blank `____`:
 
 ```python
 from refund import refund
@@ -234,42 +264,113 @@ def test_short_delay_gives_nothing():
     assert refund(80.0, 30) == 0.0
 ```
 
-Every other test has a blank `____`. Replace each blank with the refund you **expect**, calculated from the rules.
-For the last test, pick your own ticket price and delay that give exactly 4.00 euro.
-
 pytest finds every file whose name starts with `test_`, and every function in it that starts with `test_`.
-`assert` is plain Python: if the comparison is false, the test fails.
-
-### 2c. Run the tests (2 min)
+`assert` is plain Python: if the comparison is false, the test fails. Run it once like this:
 
 ```bash
 docker build -t task2 .
 docker run --rm task2
 ```
 
-If you see this, you still have a blank to fill in:
+The first build takes a bit longer (it installs pytest). You should see `5 failed, 1 passed`, and for each blank:
 
 ```
 E       NameError: name '____' is not defined
 ```
 
-When all blanks are filled, **some tests FAIL. Great: you found bugs!** There are 2 bugs in `refund.py`.
+A blank is not a value yet. Let's fill them.
 
-Read one failure. pytest shows both sides of the `==`:
+### 2c. Fill in the blanks (5 min)
+
+For every test, first work out from the rules what the refund **must** be. Then write it in:
+
+```python
+def test_delay_90_minutes():
+    assert refund(80.0, 90) == 20.0
+
+
+def test_delay_exactly_60_minutes():
+    assert refund(80.0, 60) == 20.0
+
+
+def test_delay_150_minutes():
+    assert refund(80.0, 150) == 40.0
+
+
+def test_small_refund_is_not_paid():
+    assert refund(12.0, 90) == 0.0
+
+
+# Your own test: a refund of exactly 4.00 euro IS paid out.
+# Pick a ticket price and a delay that give exactly 4.00.
+def test_exactly_4_euro_is_paid():
+    assert refund(16.0, 90) == 4.0
+```
+
+| Test | Why |
+|------|-----|
+| 90 min | 90 ≥ 60, so 25 % of 80.00 € = 20.00 € |
+| exactly 60 min | "at least 60" includes 60, so 20.00 € |
+| 150 min | 150 ≥ 120, so 50 % of 80.00 € = 40.00 € |
+| 12.00 €, 90 min | 25 % of 12.00 € = 3.00 €, below 4.00 €, so 0.00 € |
+| 16.00 €, 90 min | 25 % of 16.00 € = exactly 4.00 €, so it is paid |
+
+### 2d. Run again: the tests find bugs (2 min)
+
+Save, build and run. You should see:
 
 ```
-assert <what the code returned> == <what you expected>
+FAILED test_refund.py::test_delay_exactly_60_minutes - assert 0.0 == 20.0
+FAILED test_refund.py::test_delay_150_minutes - assert 20.0 == 40.0
+========================= 2 failed, 4 passed =========================
 ```
 
-### 2d. Find and fix the bugs (8 min)
+Read one failure. pytest shows both sides of the `==`, and even where the left value came from:
 
-Now open the code of `refund()`. Look at the delays of the failing tests and compare them with the `if` lines.
-Fix both bugs. Build and run until every test says `PASSED`.
+```
+E       assert 0.0 == 20.0
+E        +  where 0.0 = refund(80.0, 60)
+```
+
+Left: what the code returned. Right: what you expected.
 
 **Questions**
 
 1. Which delays made the tests fail? Why are exactly these values dangerous?
-2. One of your tests passed although both bugs were in the code. Which one? Why did it not find them?
+2. 4 tests passed although both bugs were in the code. Look at `test_delay_90_minutes`: it tests a delay, but it did
+   not find the delay bugs. Why?
+
+### 2e. Fix the two bugs (6 min)
+
+Now open the code of `refund()` in `refund.py`.
+
+**Bug 1:** the rule says "at least 60", but the code says "more than 60". Change
+
+```python
+    if delay_minutes > 60:
+```
+
+to
+
+```python
+    if delay_minutes >= 60:
+```
+
+Save, build and run: `1 failed, 5 passed`. 60 minutes works now, 150 minutes still fails.
+
+**Bug 2:** 150 > 60 is already true, so the first `if` wins and the 50 % branch is never reached.
+Check the bigger limit first:
+
+```python
+    if delay_minutes >= 120:
+        amount = ticket_price * 0.50
+    elif delay_minutes >= 60:
+        amount = ticket_price * 0.25
+    else:
+        amount = 0.0
+```
+
+Save, build and run. You should see `6 passed`.
 
 ### Commit
 
@@ -284,8 +385,7 @@ git commit -m "Task 2 done"
 
 ## Task 3 - Break it! (15 min)
 
-**Try it yourself first!** You are the independent tester now: think about the borders, and about input that
-"should never happen".
+You are the independent tester now: think about the borders, and about input that "should never happen".
 
 ```bash
 cd ../task3-break-it
@@ -299,39 +399,7 @@ cd ../task3-break-it
 
 The code does **not** follow this rule yet.
 
-### 3a. One test, many cases (5 min)
-
-`test_borders` is **one** test function with a table of 4 rows. pytest runs it once per row:
-
-```python
-@pytest.mark.parametrize("delay, expected", [
-    (59, 0.0),
-    (60, 20.0),
-    (119, ____),
-    (120, ____),
-])
-def test_borders(delay, expected):
-    assert refund(80.0, delay) == expected
-```
-
-Fill in the 2 blanks. (Until you do, pytest cannot even load the file: you get a `NameError` during collection.)
-Want more? Add a row of your own.
-
-### 3b. Bad input must fail (5 min)
-
-What does `refund(-80.0, 90)` return right now? A negative price makes no sense, so the rule says: raise a
-`ValueError`. The first bad-input test checks this:
-
-```python
-def test_negative_price_is_rejected():
-    with pytest.raises(ValueError):
-        refund(-80.0, 90)
-```
-
-`pytest.raises(ValueError)` means: the code inside this block **must** raise a `ValueError`, otherwise the test fails.
-
-Replace the `____` in `test_negative_delay_is_rejected` with your own test for a **negative delay**.
-Build and run:
+### 3a. Run it once (1 min)
 
 ```bash
 docker build -t task3 .
@@ -341,24 +409,84 @@ docker run --rm task3
 You should see:
 
 ```
+ERROR test_refund.py - NameError: name '____' is not defined
+Interrupted: 1 error during collection
+```
+
+In Task 2 each test failed on its own. Here a blank sits in a table that Python reads while it loads the file,
+so one blank stops the whole file.
+
+### 3b. One test, many cases (4 min)
+
+`test_borders` is **one** test function with a table of 4 rows. pytest runs it once per row. We test just below
+and exactly at every limit. Fill in the 2 blanks:
+
+```python
+@pytest.mark.parametrize("delay, expected", [
+    (59, 0.0),
+    (60, 20.0),
+    (119, 20.0),
+    (120, 40.0),
+])
+def test_borders(delay, expected):
+    assert refund(80.0, delay) == expected
+```
+
+### 3c. Bad input must fail (5 min)
+
+What does `refund(-80.0, 90)` return right now? A negative price makes no sense, so the rule says: raise a
+`ValueError`. The first bad-input test checks exactly this:
+
+```python
+def test_negative_price_is_rejected():
+    with pytest.raises(ValueError):
+        refund(-80.0, 90)
+```
+
+`pytest.raises(ValueError)` means: the code inside this block **must** raise a `ValueError`, otherwise the test fails.
+
+Now the same kind of test for a **negative delay**. The `def` line is already there: replace only the line
+`____  # write this test yourself` with the two lines below it, so that the whole function looks like this:
+
+```python
+def test_negative_delay_is_rejected():
+    with pytest.raises(ValueError):
+        refund(80.0, -30)
+```
+
+Save, build and run. You should see `2 failed, 4 passed` and twice:
+
+```
 E       Failed: DID NOT RAISE ValueError
 ```
 
-### 3c. Make the tests pass (5 min)
+The code did not refuse the bad input. It quietly returned `0.0`.
 
-In `refund.py`, raise a `ValueError` when the price or the delay is negative. In Python, raising an error looks like this:
+### 3d. Make the tests pass (5 min)
+
+In `refund.py`, add these two lines at the **top** of `refund()`, right under the docstring:
 
 ```python
-raise ValueError("a short message")
+    if ticket_price < 0 or delay_minutes < 0:
+        raise ValueError("negative input")
 ```
 
-Where in the function should this check go? Build and run until every test says `PASSED`.
-Look at the names pytest gives each row, for example `test_borders[59-0.0]`.
+Save, build and run. You should see `6 passed`. Look at the names pytest gives each row:
+
+```
+test_refund.py::test_borders[59-0.0] PASSED
+test_refund.py::test_borders[60-20.0] PASSED
+test_refund.py::test_borders[119-20.0] PASSED
+test_refund.py::test_borders[120-40.0] PASSED
+test_refund.py::test_negative_price_is_rejected PASSED
+test_refund.py::test_negative_delay_is_rejected PASSED
+```
 
 **Questions**
 
 1. Why do we test 59 and 60, and not 30 and 90?
 2. Why is an error better than quietly returning `0.0`?
+3. Why does the check go at the top of the function?
 
 ### Commit
 
@@ -395,7 +523,13 @@ You practised three ways to test:
 2. **Be the tester, not the developer.** Look for the inputs that can break the code, not the ones that make it look good.
 3. **Run the tests after every change.** Build, run, read. Later, let CI do it for you.
 
-### Finished early? Try these
+### Play at home: the QA simulation
+
+**[Your first day as a Junior QA Tester](https://uhuseynov.github.io/sdo-qa-simulation/)**: one release day in a
+small QA workspace, about 10 minutes, works on your phone. You test a new build, report bugs to the developer,
+check her fixes and tell the product manager if the release can go out at 17:00.
+
+### More practice
 
 1. Run only some tests. What does `-k` do?
 
@@ -427,7 +561,10 @@ You practised three ways to test:
 | `Cannot connect to the Docker daemon` | Start Docker (see the table in [Before you start](#before-you-start-8-min)) |
 | Linux: `permission denied ... docker.sock` | `sudo usermod -aG docker $USER`, then log out and log in again |
 | `NameError: name '____' is not defined` | You still have a blank `____` to fill in |
-| The result does not change after you edit a file | Run `docker build` again: the image holds a copy of your code |
+| Task 3: `1 failed, 5 passed` instead of `2 failed, 4 passed` | The `def test_negative_delay_is_rejected():` line is there twice (a function inside a function). Keep only one. |
+| The result does not change after you edit a file | Save the file (**Ctrl + S**) and run `docker build` again: the image holds a copy of your code. If the build shows `CACHED` on the `COPY` line, the file was not saved. |
+| Task 1: `Expected:` shows extra spaces | You pasted into a line that was already indented. `>>>` and the expected result must start in the same column. |
+| Task 1: `SyntaxError` | The test lines are below the closing `"""`. Move them inside the docstring. |
 | Task 1: a test fails although the answer looks right | doctest compares **text**: write `True` / `False` exactly like Python prints them (not `true`). Check the indentation, too. |
 | Plan B: strange import errors | Run the command inside the task folder, not in `sdo-testing-lab` |
 | PowerShell: `running scripts is disabled` (Plan B) | `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`, then activate again |
